@@ -1,0 +1,390 @@
+II. Design a database for managing the data for an
+customers to order food from various restaurants.
+tables:
+ Customers(CustomerID, Name, Phone, Email, Address)
+ Restaurants(RestaurantID, Name, Location, Cuisine)
+ MenuItems(ItemID, RestaurantID, ItemName, Price)
+ Orders(OrderID, CustomerID, ItemID, Quantity, OrderDate, Status)
+Demonstrate following operations
+1. Add 3 new customers.
+2. Add a new restaurant and at least 3 menu items for it.
+3. Record a few new orders placed by customers for menu items.
+4. Update the phone number of a customer.
+5. Change the price of a menu item (e.g., increase price by 10%).
+6. Update the status of an order to " deliverd"
+7. Delete a customer who has not placed any orders.
+8. Delete a menu item that is no longer available.
+9. Delete an order that was cancelled by the customer
+
+
+
+
+
+
+
+
+
+
+
+Enter password: ****
+Welcome to the MySQL monitor.  Commands end with ; or \g.
+Your MySQL connection id is 47
+Server version: 8.0.27 MySQL Community Server - GPL
+
+Copyright (c) 2000, 2021, Oracle and/or its affiliates.
+
+Oracle is a registered trademark of Oracle Corporation and/or its
+affiliates. Other names may be trademarks of their respective
+owners.
+
+Type 'help;' or '\h' for help. Type '\c' to clear the current input statement.
+
+mysql> create database resturant_197;
+Query OK, 1 row affected (0.01 sec)
+
+mysql> show databases;
++--------------------+
+| Database           |
++--------------------+
+| customersdb        |
+| fooddeliverydb     |
+| information_schema |
+| lbdb               |
+| librarydb          |
+| mysql              |
+| performance_schema |
+| resturant_197      |
+| sakila             |
+| school             |
+| sys                |
+| testdb             |
+| world              |
++--------------------+
+13 rows in set (0.03 sec)
+
+mysql> use resturant_197;
+Database changed
+mysql> create table customers(
+    -> customerid varchar(20) primary key;
+ERROR 1064 (42000): You have an error in your SQL syntax; check the manual that corresponds to your MySQL server version for the right syntax to use near '' at line 2
+mysql> create table customers(
+    -> customerid varchar(20) primary key,
+    -> name varchar(20) not null,
+    -> phone bigint not null,
+    -> email varchar(20) not null unique
+    -> check( email like'%_@__%.__%'),
+    -> address varchar(20) not null
+    -> );
+Query OK, 0 rows affected (0.04 sec)
+
+mysql> desc customer;
+ERROR 1146 (42S02): Table 'resturant_197.customer' doesn't exist
+mysql> desc customers;
++------------+-------------+------+-----+---------+-------+
+| Field      | Type        | Null | Key | Default | Extra |
++------------+-------------+------+-----+---------+-------+
+| customerid | varchar(20) | NO   | PRI | NULL    |       |
+| name       | varchar(20) | NO   |     | NULL    |       |
+| phone      | bigint      | NO   |     | NULL    |       |
+| email      | varchar(20) | NO   | UNI | NULL    |       |
+| address    | varchar(20) | NO   |     | NULL    |       |
++------------+-------------+------+-----+---------+-------+
+5 rows in set (0.01 sec)
+
+mysql> create table resturant(
+    -> resturantid varchar(20) primary key,
+    -> name varchar(20) not null,
+    -> location varchar(20) not null,
+    -> cusine varchar(20) not null,
+    -> );
+ERROR 1064 (42000): You have an error in your SQL syntax; check the manual that corresponds to your MySQL server version for the right syntax to use near ')' at line 6
+mysql> create table resturant(
+    -> resturantid varchar(20) primary key,
+    -> name varchar(20) not null,
+    -> location varchar(20) not null,
+    -> cusine varchar(20) not null
+    -> );
+Query OK, 0 rows affected (0.01 sec)
+
+mysql> desc resturant;
++-------------+-------------+------+-----+---------+-------+
+| Field       | Type        | Null | Key | Default | Extra |
++-------------+-------------+------+-----+---------+-------+
+| resturantid | varchar(20) | NO   | PRI | NULL    |       |
+| name        | varchar(20) | NO   |     | NULL    |       |
+| location    | varchar(20) | NO   |     | NULL    |       |
+| cusine      | varchar(20) | NO   |     | NULL    |       |
++-------------+-------------+------+-----+---------+-------+
+4 rows in set (0.02 sec)
+
+mysql> create table menuitem(
+    -> itemid varchar(20) primary key,
+    -> resturantid(20) not null,
+    -> itemname varchar(20) not null,
+    -> price decimal(6,2) not null check(price>0),
+    -> foreign key(resturantid)references resturant(resturantid)
+    -> );
+ERROR 1064 (42000): You have an error in your SQL syntax; check the manual that corresponds to your MySQL server version for the right syntax to use near '(20) not null,
+itemname varchar(20) not null,
+price decimal(6,2) not null check(' at line 3
+mysql> create table menuitem(
+    -> itemid varchar(20) primary key,
+    -> resturantid varchar(20) not null,
+    -> itemname varchar(20) not null,
+    -> price decimal(6,2) not null check(price>0),
+    -> foreign key(resturantid)references resturant(resturantid)
+    -> );
+Query OK, 0 rows affected (0.03 sec)
+
+mysql> desc menuitem;
++-------------+--------------+------+-----+---------+-------+
+| Field       | Type         | Null | Key | Default | Extra |
++-------------+--------------+------+-----+---------+-------+
+| itemid      | varchar(20)  | NO   | PRI | NULL    |       |
+| resturantid | varchar(20)  | NO   | MUL | NULL    |       |
+| itemname    | varchar(20)  | NO   |     | NULL    |       |
+| price       | decimal(6,2) | NO   |     | NULL    |       |
++-------------+--------------+------+-----+---------+-------+
+4 rows in set (0.01 sec)
+
+
+mysql> create table orders(
+    -> orderid varchar(20) primary key,
+    -> customerid varchar(20) not null,
+    -> itemid varchar(20) primary key,
+    -> quantity int check(quantity>0),
+    -> date date not null,
+    -> status varchar(20) not null,
+    -> foreign key(customerid) references customers(customerid),
+    -> foreign key(itemid) references menuitem(itemid)
+    -> );
+ERROR 1068 (42000): Multiple primary key defined
+mysql> create table orders(
+    -> orderid varchar(20) primary key,
+    -> customerid varchar(20) not null,
+    -> itemid varchar(20) not null,
+    -> quantity int check(quantity>0),
+    -> date date not null,
+    -> status varchar(20) not null,
+    -> foreign key(customerid) references customers(customerid),
+    -> foreign key(itemid) references menuitem(itemid)
+    -> );
+Query OK, 0 rows affected (0.02 sec)
+
+mysql> desc orders;
++------------+-------------+------+-----+---------+-------+
+| Field      | Type        | Null | Key | Default | Extra |
++------------+-------------+------+-----+---------+-------+
+| orderid    | varchar(20) | NO   | PRI | NULL    |       |
+| customerid | varchar(20) | NO   | MUL | NULL    |       |
+| itemid     | varchar(20) | NO   | MUL | NULL    |       |
+| quantity   | int         | YES  |     | NULL    |       |
+| date       | date        | NO   |     | NULL    |       |
+| status     | varchar(20) | NO   |     | NULL    |       |
++------------+-------------+------+-----+---------+-------+
+6 rows in set (0.02 sec)
+
+mysql> insert into customers values('658fyt658986','shriraksha','9113926789','shr@gmail.com','viveknagarmanki');
+Query OK, 1 row affected (0.02 sec)
+
+mysql> insert into customers values('658vctdtrsc45','poorthi','9268926789','poo@gmail.com','royalfeildknagarmanki');
+ERROR 1406 (22001): Data too long for column 'address' at row 1
+mysql> insert into customers values('658vctdtrsc45','poorthi','9268926789','poo@gmail.com','royalfeild');
+Query OK, 1 row affected (0.02 sec)
+
+mysql> insert into customers values('658vctdtrsc46','susmi','8088927652','susmi@gmail.com','silconcity');
+Query OK, 1 row affected (0.00 sec)
+
+mysql> insert into resturant values('7890','ballaltousrist','moodbidri,karnataka','italian'');
+    '> ^C
+mysql> insert into resturant values('7890','ballaltousrist','moodbidri,karnataka','italian');
+Query OK, 1 row affected (0.01 sec)
+
+mysql> insert into resturant values('7891','navamiltousrist','chikamanglore,karnataka','southindian');
+ERROR 1406 (22001): Data too long for column 'location' at row 1
+mysql> insert into resturant values('7891','navamiltousrist','manglore,karnataka','southindian');
+Query OK, 1 row affected (0.01 sec)
+
+mysql> insert into resturant values('7891','romaciahtousrist','honnavar,karnataka','mughlain');
+ERROR 1062 (23000): Duplicate entry '7891' for key 'resturant.PRIMARY'
+mysql> insert into resturant values('7892','romaciahtousrist','honnavar,karnataka','mughlain');
+Query OK, 1 row affected (0.13 sec)
+
+mysql> insert into menuitem values('9788','7892','biryani','2345');
+Query OK, 1 row affected (0.01 sec)
+
+mysql> insert into menuitem values('9789','7891','tandoori','45');
+Query OK, 1 row affected (0.01 sec)
+
+mysql> select * from customers;
++---------------+------------+------------+-----------------+-----------------+
+| customerid    | name       | phone      | email           | address         |
++---------------+------------+------------+-----------------+-----------------+
+| 658fyt658986  | shriraksha | 9113926789 | shr@gmail.com   | viveknagarmanki |
+| 658vctdtrsc45 | poorthi    | 9268926789 | poo@gmail.com   | royalfeild      |
+| 658vctdtrsc46 | susmi      | 8088927652 | susmi@gmail.com | silconcity      |
++---------------+------------+------------+-----------------+-----------------+
+3 rows in set (0.02 sec)
+
+mysql> select * from resturant;
++-------------+------------------+---------------------+-------------+
+| resturantid | name             | location            | cusine      |
++-------------+------------------+---------------------+-------------+
+| 7890        | ballaltousrist   | moodbidri,karnataka | italian     |
+| 7891        | navamiltousrist  | manglore,karnataka  | southindian |
+| 7892        | romaciahtousrist | honnavar,karnataka  | mughlain    |
++-------------+------------------+---------------------+-------------+
+3 rows in set (0.00 sec)
+
+mysql> select * from menuitem;
++--------+-------------+----------+---------+
+| itemid | resturantid | itemname | price   |
++--------+-------------+----------+---------+
+| 9788   | 7892        | biryani  | 2345.00 |
+| 9789   | 7891        | tandoori |   45.00 |
+| 9790   | 7890        | kabab    |  450.00 |
++--------+-------------+----------+---------+
+3 rows in set (0.00 sec)
+
+mysql> insert into orders values('6789','658fyt658986','biryani','8','2025-07-12','pending');
+ERROR 1452 (23000): Cannot add or update a child row: a foreign key constraint fails (`resturant_197`.`orders`, CONSTRAINT `orders_ibfk_2` FOREIGN KEY (`itemid`) REFERENCES `menuitem` (`itemid`))
+mysql> insert into orders values('6789','658fyt658986','9788','8','2025-07-12','pending');
+Query OK, 1 row affected (0.00 sec)
+
+mysql> insert into orders values('6789','658fyt658986','9789','3','2025-07-11','deliverd');
+ERROR 1062 (23000): Duplicate entry '6789' for key 'orders.PRIMARY'
+mysql> insert into orders values('6790','658fyt658986','9789','3','2025-07-11','deliverd');
+Query OK, 1 row affected (0.02 sec)
+
+mysql> insert into orders values('6791','658fyt658986','9790','9','2025-07-31','deliverd');
+Query OK, 1 row affected (0.02 sec)
+
+mysql> select * from oreders;
+ERROR 1146 (42S02): Table 'resturant_197.oreders' doesn't exist
+mysql> select * from orders;
++---------+--------------+--------+----------+------------+----------+
+| orderid | customerid   | itemid | quantity | date       | status   |
++---------+--------------+--------+----------+------------+----------+
+| 6789    | 658fyt658986 | 9788   |        8 | 2025-07-12 | pending  |
+| 6790    | 658fyt658986 | 9789   |        3 | 2025-07-11 | deliverd |
+| 6791    | 658fyt658986 | 9790   |        9 | 2025-07-31 | deliverd |
++---------+--------------+--------+----------+------------+----------+
+3 rows in set (0.00 sec)
+
+mysql> insert into menuitem values('9792','7892','idlii','900');
+Query OK, 1 row affected (0.02 sec)
+
+mysql> insert into menuitem values('9793','7892','vadapav','900');
+Query OK, 1 row affected (0.01 sec)
+
+mysql> select * from menuitem;
++--------+-------------+----------+---------+
+| itemid | resturantid | itemname | price   |
++--------+-------------+----------+---------+
+| 9788   | 7892        | biryani  | 2345.00 |
+| 9789   | 7891        | tandoori |   45.00 |
+| 9790   | 7890        | kabab    |  450.00 |
+| 9791   | 7892        | noodles  |  588.00 |
+| 9792   | 7892        | idlii    |  900.00 |
+| 9793   | 7892        | vadapav  |  900.00 |
++--------+-------------+----------+---------+
+6 rows in set (0.00 sec)
+
+
+
+mysql> select * from orders;
++---------+--------------+--------+----------+------------+----------+
+| orderid | customerid   | itemid | quantity | date       | status   |
++---------+--------------+--------+----------+------------+----------+
+| 6789    | 658fyt658986 | 9788   |        8 | 2025-07-12 | pending  |
+| 6790    | 658fyt658986 | 9789   |        3 | 2025-07-11 | deliverd |
+| 6791    | 658fyt658986 | 9790   |        9 | 2025-07-31 | deliverd |
++---------+--------------+--------+----------+------------+----------+
+3 rows in set (0.02 sec)
+
+mysql> insert into orders value('6792','658vctdtrsc46','9790','4','2025-08-20','canceled');
+Query OK, 1 row affected (0.00 sec)
+
+mysql> select * from orders;
++---------+---------------+--------+----------+------------+----------+
+| orderid | customerid    | itemid | quantity | date       | status   |
++---------+---------------+--------+----------+------------+----------+
+| 6789    | 658fyt658986  | 9788   |        8 | 2025-07-12 | pending  |
+| 6790    | 658fyt658986  | 9789   |        3 | 2025-07-11 | deliverd |
+| 6791    | 658fyt658986  | 9790   |        9 | 2025-07-31 | deliverd |
+| 6792    | 658vctdtrsc46 | 9790   |        4 | 2025-08-20 | canceled |
++---------+---------------+--------+----------+------------+----------+
+4 rows in set (0.00 sec)
+
+
+mysql> update customers;
+ERROR 1064 (42000): You have an error in your SQL syntax; check the manual that corresponds to your MySQL server version for the right syntax to use near '' at line 1
+mysql> update customers
+    -> set phone = 9113915080
+    -> where customerid='658fyt658986';
+Query OK, 1 row affected (0.02 sec)
+Rows matched: 1  Changed: 1  Warnings: 0
+
+mysql> select * from customers;
++---------------+------------+------------+-----------------+-----------------+
+| customerid    | name       | phone      | email           | address         |
++---------------+------------+------------+-----------------+-----------------+
+| 658fyt658986  | shriraksha | 9113915080 | shr@gmail.com   | viveknagarmanki |
+| 658vctdtrsc45 | poorthi    | 9268926789 | poo@gmail.com   | royalfeild      |
+| 658vctdtrsc46 | susmi      | 8088927652 | susmi@gmail.com | silconcity      |
++---------------+------------+------------+-----------------+-----------------+
+3 rows in set (0.00 sec)
+
+
+
+mysql> update menuitem
+    -> set price=price+0.1*price
+    -> where itemid='9791';
+Query OK, 1 row affected (0.02 sec)
+Rows matched: 1  Changed: 1  Warnings: 0
+
+mysql> select * from menuitem;
++--------+-------------+----------+---------+
+| itemid | resturantid | itemname | price   |
++--------+-------------+----------+---------+
+| 9788   | 7892        | biryani  | 2345.00 |
+| 9789   | 7891        | tandoori |   45.00 |
+| 9790   | 7890        | kabab    |  450.00 |
+| 9791   | 7892        | noodles  |  646.80 |
+| 9792   | 7892        | idlii    |  900.00 |
+| 9793   | 7892        | vadapav  |  900.00 |
++--------+-------------+----------+---------+
+6 rows in set (0.00 sec)
+
+
+
+mysql> delete from menuitem
+    -> where itemid='9791';
+Query OK, 1 row affected (0.01 sec)
+
+mysql> select * from menuitem;
++--------+-------------+----------+---------+
+| itemid | resturantid | itemname | price   |
++--------+-------------+----------+---------+
+| 9788   | 7892        | biryani  | 2345.00 |
+| 9789   | 7891        | tandoori |   45.00 |
+| 9790   | 7890        | kabab    |  450.00 |
+| 9792   | 7892        | idlii    |  900.00 |
+| 9793   | 7892        | vadapav  |  900.00 |
++--------+-------------+----------+---------+
+5 rows in set (0.00 sec)
+
+
+
+
+mysql> select * from orders;
++---------+--------------+--------+----------+------------+----------+
+| orderid | customerid   | itemid | quantity | date       | status   |
++---------+--------------+--------+----------+------------+----------+
+| 6789    | 658fyt658986 | 9788   |        8 | 2025-07-12 | deliverd |
+| 6790    | 658fyt658986 | 9789   |        3 | 2025-07-11 | deliverd |
+| 6791    | 658fyt658986 | 9790   |        9 | 2025-07-31 | deliverd |
++---------+--------------+--------+----------+------------+----------+
+3 rows in set (0.00 sec)
+
+
